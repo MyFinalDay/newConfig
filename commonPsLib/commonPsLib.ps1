@@ -1,3 +1,12 @@
+
+function handleSpeicalSymbol {
+    param(
+        $pg
+    )
+
+    $process = $pg.ToString()
+    $process
+}
 function logSizeHuman ($i) {
     # beautify  
     if ($i -ne $null) {

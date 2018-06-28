@@ -88,3 +88,52 @@ function ns {
         Default { ns bd  }
     }
 }
+
+function fs {
+    # function search
+    param(
+        [ValidateSet("", "fn", "variable", "env")]
+        [string]
+        $type
+    )
+
+    $keyWord = $args -join " "
+
+    switch ($type) {
+        fn {
+            $res = ( Get-ChildItem function: | Where-Object {$_.Name -like "*$keyWord*"}  )
+            $resCnt = ( $res | Measure-Object ).Count
+            $res | Format-List | more
+            $resCnt
+        }
+        variable {
+            $allHashTableVariable = (Get-ChildItem variable: | Where-Object {$_.value -ne $null} | Group-Object {$_.value.gettype()} | Where-Object {$_.name -like "*Hash*"} ).Group
+            $matchRes = ($allHashTableVariable | ForEach-Object {$_.value}) | ForEach-Object {$_.keys} | Where-Object {$_ -like "*$keyWord*"}
+            $allHashTableName = $allHashTableVariable | ForEach-Object {$_.Name}
+
+            $res = ( Get-ChildItem variable: | Where-Object {$_.Name -like "*$keyWord*"}  )
+            $resCnt = ( $res | Measure-Object ).Count
+            $res | Format-List | more
+
+            if ( ( $matchRes | Measure-Object ).Count -ne 0 ) {
+                foreach ($v in $allHashTableName) {
+                    if ( (Invoke-Expression ("$" + $v)).ContainsKey($matchRes) ) {
+                        # HashTableVariable Name $v 
+                        # HashTableVarible Key Name $matchRes
+                        [string]::Concat("$", $v, ".", $matchRes) | clip.exe
+                    }
+                }
+            }
+
+            $resCnt
+        }
+        env {
+            $res = ( Get-ChildItem env: | Where-Object {$_.Name -like "*$keyWord*"}  )
+            $resCnt = ( $res | Measure-Object ).Count
+            $res | Format-List | more
+            $resCnt
+        }
+        Default { '*\(*^_^*)/*' + '    ' + ( [datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss ddd') ) }
+    }
+
+}
