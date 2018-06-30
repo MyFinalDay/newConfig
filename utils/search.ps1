@@ -89,6 +89,23 @@ function ns {
     }
 }
 
+function bd {
+    # eg. bd powershellAPI -> baidu.com search powershellAPI
+    $keyWord = ($args -join " ")
+    if (![string]::IsNullOrEmpty($keyWord)) {
+        # $keyWord = [System.Web.HttpUtility]::UrlEncode($keyWord) ( is Error !)
+        $keyWord = [uri]::EscapeDataString($keyWord)
+    }
+
+
+    if ($keyWord -ne '') {
+        Start-Process https://www.baidu.com/s?wd=$keyWord
+    }
+    else {
+        Start-Process https://www.baidu.com/
+    }
+}
+
 function fs {
     # function search
     param(

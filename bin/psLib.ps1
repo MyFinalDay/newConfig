@@ -2,7 +2,14 @@
 . E:\DataIn\gitRemoteProject\new_powershell_profile\commonPsLib\commonPsLib.ps1
 # utils
 . E:\DataIn\gitRemoteProject\new_powershell_profile\utils\search.ps1
+. E:\DataIn\gitRemoteProject\new_powershell_profile\utils\translate.ps1
 # 
+
+# Import-Alias
+Invoke-Expression 'ipal E:\DataIn\gitRemoteProject\new_powershell_profile\setting\alias.csv -Force' 
+
+# set window title
+$Host.UI.RawUI.WindowTitle = '*\(*^_^*)/*' + '    ' + (date)
 
 
 enum ProgramEnum {
@@ -11,8 +18,15 @@ enum ProgramEnum {
     weChat
     webstorm64 
     powershell 
+    gvim
+    cmd
+    vim
+    gitBash
+    i_view64
+    wechatdevtools
 }
-#
+
+# Function
 function sll {
     param(
         [string]
@@ -89,11 +103,9 @@ function cl() {
     Set-Location ..
     if ($fileCount -gt 53 -or $directoryCount -gt 53) {
         Get-ChildItem | Sort-Object LastAccessTime -Descending | more
-        # Get-ChildItemColor | Sort-Object LastAccessTime -Descending | more
     }
     else {
         Get-ChildItem
-        # Get-ChildItemColor
     }
 
 
@@ -108,6 +120,11 @@ function cl() {
     }, @{Label = "Directory count"; Expression = {$_."Directory count"}; alignment = "center";
     }, @{Label = "lastAccessFile"; Expression = {$_."lastAccessFile"}; alignment = "center";
     }, @{Label = "lastAccessDirectory"; Expression = {$_."lastAccessDirectory"}; alignment = "center"; }
+}
+
+function ccl {
+    Set-Location ..
+    cl
 }
 
 
@@ -212,4 +229,107 @@ function pg {
         }
         Default { Start-Process $Global:programPathHash[$process] }
     }
+}
+
+function lastPS {
+    # Get process last start-up ( has MainWindowTitle) eg. lastPS -> return 
+    $ErrorActionPreference = "SilentlyContinue"
+    Get-Process | Where-Object {$_.MainWindowTitle.ToString().Length -ne 0} | Sort-Object StartTime -Descending |
+        Format-Table Name, Id, @{Label = "  WS (MB)  "; Expression = {logSizeHuman $_.WS}; alignment = "center";
+    }, @{Name = "  StartTime  "; Expression = {($_.StartTime).ToString().split(' ')[1]}; alignment = "center";
+    }, @{Label = "  Total Running time  "; Expression = {((Get-Date) - $_.StartTime).ToString().Split(".")[0]}; alignment = "center"; }, MainWindowTitle
+    $ErrorActionPreference = "Continue"
+}
+function killLastPS_quick {
+    # Stop-Process(only some special process use killLastPS for normal) eg. killPS powershell -> kill the last start-up powershell 
+    param(
+        [ProgramEnum]
+        $pg
+    )
+    $process = handleSpeicalSymbol $pg
+
+    $ErrorActionPreference = "SilentlyContinue"
+    if ($process.ToLower() -eq 'explorer') {
+        Get-Process $process | Where-Object {$_.MainWindowTitle -ne ''} | Sort-Object StartTime -Descending | Select-Object -First 1 | Stop-Process
+    }
+    else {
+        Get-Process $process | Sort-Object StartTime -Descending | Select-Object -First 1 | Stop-Process 
+    }
+    $ErrorActionPreference = "Continue"
+}
+
+function zs {
+    param(
+        [ValidateSet("path", "reNamePinyin_quick", "reNamePinyin_recuresDeepPath2",
+            "gTools", "eazydict", "testJs", "reStart", "searchResultPath", "phone",
+            "tapd")]
+        [string]
+        $type
+    )
+
+    $paramStr = ($args -join '')
+    $paramStrWithBlank = ($args -join ' ')
+    $paramArr = $args
+
+    switch ($type) {
+        path { 
+            # window path to git-bash path
+            saveCurrentPath            
+            $res = changeCRLFToLF  $Global:lastAccessPath
+            $res = 'cd ' + $res | clip
+        }
+
+        reNamePinyin_quick {
+            $item = ( Get-ChildItem $paramStr )
+            $item | ForEach-Object { reNameWithPinying -item $_ -firstAlpha ( chineseToPinyin $_.ToString().Substring(0, 2) ) }
+        }
+
+        reNamePinyin_recuresDeepPath2 {
+            $item = (Get-ChildItem -Recurse $paramStr)
+            $item | ForEach-Object { reNameWithPinying -item $_ -firstAlpha ( chineseToPinyin $_.ToString().Substring(0, 2) ) }
+        }
+
+        gTools {
+            pg gvim E:\DataIn\gitRemoteProject\ElispNote\noteFile\tool_key.js
+        }
+
+        testJs {
+            pg gvim E:\TmpReadOnlyData\waService.js
+        }
+        eazydict {
+            # SimpleTranslate $paramStrWithBlank
+            eazydict.cmd $paramArr
+        }
+
+        reStart {
+            Stop-Process -Name $paramStr
+            pg $paramStr
+        }
+
+        searchResultPath {
+            pg gvim E:\DataIn\PowershellScriptData\tmpCacheFile\tmpSearchResultPath.js
+        }
+
+        phone {
+            $Global:MyMsg.phone | clip
+        }
+
+        tapd {
+            Start-Process https://www.tapd.cn/my_worktable?left_tree=1
+            $url = "https://www.tapd.cn/worktable_ajax/get_top_nav_worktable_data?t=0.3755283616519416"
+            Start-Sleep -Seconds 1 
+            Start-Process $url
+        }
+        Default {}
+    }
+}
+
+
+function uploadTime {
+    # from computer start to current
+    New-TimeSpan -End ([datetime]::Now) -Start (Get-Content E:\DataIn\gitRemoteProject\new_powershell_profile\tmpCachedFile\tmpStartUpInfo.txt) -ErrorAction SilentlyContinue | Format-Table 
+}
+
+function psLib  {
+   '. E:\DataIn\gitRemoteProject\new_powershell_profile\bin\psLib.ps1' | clip
 }
