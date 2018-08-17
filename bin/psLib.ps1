@@ -3,27 +3,28 @@
 # utils
 . E:\DataIn\gitRemoteProject\new_powershell_profile\utils\search.ps1
 . E:\DataIn\gitRemoteProject\new_powershell_profile\utils\translate.ps1
-# 
+#
 
 # Import-Alias
-Invoke-Expression 'ipal E:\DataIn\gitRemoteProject\new_powershell_profile\setting\alias.csv -Force' 
+Invoke-Expression 'ipal E:\DataIn\gitRemoteProject\new_powershell_profile\setting\alias.csv -Force'
 
 # set window title
-$Host.UI.RawUI.WindowTitle = '*\(*^_^*)/*' + '    ' + (date)
+$Host.UI.RawUI.WindowTitle = '*\(*^_^*)/*' + '    ' + (Get-Date)
 
 
 enum ProgramEnum {
     firefox
     chrome
     weChat
-    webstorm64 
-    powershell 
+    webstorm64
+    powershell
     gvim
     cmd
     vim
     gitBash
     i_view64
     wechatdevtools
+    BaiduNetdisk
 }
 
 # Function
@@ -36,7 +37,7 @@ function sll {
             "saveCurrentPath")]
         [string]
         $openType
-    ) 
+    )
 
     Set-Location $location
     $cnt = (Get-ChildItem | Measure-Object).Count
@@ -290,7 +291,7 @@ function zs {
         }
 
         gTools {
-            pg gvim E:\DataIn\gitRemoteProject\ElispNote\noteFile\tool_key.js
+            pg gvim C:\Users\vipyo\gitRemoteProject\ElispNote\noteFile\tool_key.js
         }
 
         testJs {
@@ -330,6 +331,40 @@ function uploadTime {
     New-TimeSpan -End ([datetime]::Now) -Start (Get-Content E:\DataIn\gitRemoteProject\new_powershell_profile\tmpCachedFile\tmpStartUpInfo.txt) -ErrorAction SilentlyContinue | Format-Table 
 }
 
-function psLib  {
-   '. E:\DataIn\gitRemoteProject\new_powershell_profile\bin\psLib.ps1' | clip
+function psLib {
+    '. E:\DataIn\gitRemoteProject\new_powershell_profile\bin\psLib.ps1' | clip
+}
+
+function rmDistByShell {
+    'rm -r `ls | grep -v *config*`' | clip
+}
+
+function ed {
+    # if current path has only 1 directory, then cd & ls eg. ed
+    $FileAndDirectory = Get-ChildItem | Measure-Object
+    $directory = Get-ChildItem -Directory | Measure-Object
+
+    $directoryCount = (Get-ChildItem -Directory . | Measure-Object).Count
+    $fileCount = (Get-ChildItem -File . | Measure-Object).Count
+    $lastAccessTimeFile = (Get-ChildItem -File . | Sort-Object LastAccessTime -Descending | Select-Object -First 1)
+    $lastAccessTimeDirectory = (Get-ChildItem -Directory . | Sort-Object LastAccessTime -Descending | Select-Object -First 1)
+
+    if (($FileAndDirectory.Count -eq 1) -and ($directory.Count -eq 1)) {
+        Set-Location *
+        Get-ChildItem
+        Write-Host ""
+        Write-Host "Directory count:".PadLeft(25) $directoryCount "   File Count:" $fileCount
+        Write-Host "lastAccessFile:".PadLeft(25) $lastAccessTimeFile " lastAccessDirectory:" $lastAccessTimeDirectory
+    }
+    else {
+        Write-Host ""
+        Write-Host "Directory count:".PadLeft(25) $directoryCount "   File Count:" $fileCount
+        Write-Host "lastAccessFile:".PadLeft(25) $lastAccessTimeFile " lastAccessDirectory:" $lastAccessTimeDirectory
+    }
+}
+
+function slf {
+    # start-process lastAccessFile
+    $lastAccessTimeFile = (Get-ChildItem -File . | Sort-Object LastAccessTime -Descending | Select-Object -First 1)
+    Start-Process $lastAccessTimeFile
 }

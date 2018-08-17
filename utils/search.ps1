@@ -4,7 +4,7 @@ function ns {
         [ValidateSet("", "bd", "g2", "bk", "segmentfault", "stackoverflow", "bd_FileType",
             "searchBookmarksOfChrome", "github", "googleTranslate", "baiduTranslate",
             "bingTranslate", "codepen", "wiki", "youdaoTranslate", "quora", "serverfault",
-            "zstackexchange", "iconfont" )]
+            "zstackexchange", "iconfont", "weixinDevelop" )]
         [string]
         $net
     ) 
@@ -84,7 +84,9 @@ function ns {
         iconfont {
             Start-Process http://www.iconfont.cn/search/index?q=$keyword
         }
-
+        weixinDevelop {
+            Start-Process "https://developers.weixin.qq.com/search?action=list&t=search/index&blogcategory=511&search_type=1&key=$keyword&token=1279567493&lang=zh_CN"
+        }
         Default { ns bd  }
     }
 }
