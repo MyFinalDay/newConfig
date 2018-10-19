@@ -25,6 +25,7 @@ enum ProgramEnum {
     i_view64
     wechatdevtools
     BaiduNetdisk
+    PxCook         
 }
 
 # Function
@@ -142,7 +143,7 @@ function wsAll {
             $process
         )
         
-        if ( ( Get-Process | Where-Object {$_.Name -eq $process} ) -ne $null ) {
+        if ( $null -ne ( Get-Process | Where-Object {$_.Name -eq $process} ) ) {
             $true
         }
         else {
@@ -159,7 +160,7 @@ function wsAll {
         $maybeRes = [enum]::GetNames([ProgramEnum]) |
             Where-Object {$_.toLower().StartsWith($process.Substring(0, 1).toLower())} |
             Where-Object {isProcessRunning $_}
-        if ( $maybeRes -ne $null ) {
+        if ( $null -ne $maybeRes ) {
             Write-Host "`nDo you mean?`n"
             $maybeRes
             Write-Host ""
@@ -269,7 +270,7 @@ function zs {
     )
 
     $paramStr = ($args -join '')
-    $paramStrWithBlank = ($args -join ' ')
+    # $paramStrWithBlank = ($args -join ' ')
     $paramArr = $args
 
     switch ($type) {
